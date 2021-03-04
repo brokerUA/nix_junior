@@ -1,0 +1,79 @@
+version: "3.8"
+services:
+  
+  php:
+    build:
+      args:
+        user: broker
+        uid: 1000
+      context: ./.docker/php/
+      dockerfile: Dockerfile
+    image: php-7.4-fpm
+    container_name: nix-php
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+      - ./.docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - nix
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:5.7
+    container_name: nix-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - mysqldata:/var/lib/mysql/
+      - ./.docker/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - nix
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: nix-phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      PMA_HOST: ${DB_HOST}
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - nix
+    depends_on:
+      - mysql
+
+  nginx:
+    image: nginx:1.19-alpine
+    container_name: nix-nginx
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ./:/var/www
+      - ./.docker/nginx/conf.d:/etc/nginx/conf.d
+      - phpmyadmindata:/var/www/phpmyadmin
+    networks:
+      - nix
+    depends_on:
+      - php
+      - phpmyadmin
+
+networks:
+  nix:
+    driver: bridge
+
+volumes:
+  mysqldata:
+    driver: local
+  phpmyadmindata:
+    driver: local
