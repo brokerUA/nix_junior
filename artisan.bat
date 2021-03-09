@@ -1,2 +1,2 @@
 @ECHO OFF
-docker-compose exec php php artisan
+docker-compose exec php php artisan $*
