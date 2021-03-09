@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-  
+
   php:
     build:
       args:
@@ -68,6 +68,19 @@ services:
       - php
       - phpmyadmin
 
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: nix-meilisearch
+    restart: always
+    ports:
+      - 7700:7700
+    volumes:
+      - meilidata:/data.ms
+    networks:
+      - nix
+    depends_on:
+      - mysql
+
 networks:
   nix:
     driver: bridge
@@ -76,4 +89,6 @@ volumes:
   mysqldata:
     driver: local
   phpmyadmindata:
+    driver: local
+  meilidata:
     driver: local

@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\Books;
+use App\Models\Author;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class BooksFactory extends Factory
+class AuthorFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Books::class;
+    protected $model = Author::class;
 
     /**
      * Define the model's default state.
@@ -22,7 +22,7 @@ class BooksFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'name' => $this->faker->name
         ];
     }
 }
