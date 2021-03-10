@@ -17,11 +17,15 @@ class BookController extends Controller
      */
     public function index()
     {
-        $page = request()->get('page');
+        $page = request('page');
 
         if ($page == 1) {
             return redirect()
                 ->route('book.index', request()->except(['page']));
+        }
+
+        if (request('action') == 'search') {
+            return $this->search();
         }
 
         $categories = Category::orderBy('name')->get();
@@ -92,19 +96,22 @@ class BookController extends Controller
         ));
     }
 
-    public function search()
+    private function search()
     {
-        $page = request()->get('page');
-
-        if ($page == 1) {
-            return redirect()
-                ->route('book.search', request()->except(['page']));
-        }
-
         $books = Book::search(request('query'))
             ->paginate(5);
 
-        return view('book.search', compact('books'));
+        $categories = Category::orderBy('name')->get();
+
+        $requestSort = request('sort', 'created_at');
+        $requestOrder = request('order', 'desc');
+
+        return view('book.index', compact(
+            'books',
+            'requestSort',
+            'requestOrder',
+            'categories',
+        ));
     }
 
     /**
