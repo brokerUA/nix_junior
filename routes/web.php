@@ -14,6 +14,10 @@ use App\Http\Controllers\BookController as BookController;
 |
 */
 
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
 Route::get('/', [BookController::class, 'index'])
     ->name('book.index');
 
