@@ -7,6 +7,8 @@ use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class BookController extends Controller
 {
@@ -17,6 +19,27 @@ class BookController extends Controller
      */
     public function index()
     {
+        $validator = Validator::make(request()->all(), [
+            'page' => 'nullable|integer|min:1',
+            'action' => ['nullable', Rule::in(['search', 'filter'])],
+            'query' => 'nullable|required_if:action,search|string|max:100',
+            'sort' => 'nullable|string',
+            'order' => ['nullable', Rule::in(['asc', 'desc'])],
+            'filter' => 'nullable|array',
+            'filter.title' => 'nullable|string',
+            'filter.description' => 'nullable|string',
+            'filter.author' => 'nullable|string',
+            'filter.category' => 'nullable|integer|min:1',
+            'filter.date' => 'nullable|date',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('book.index')
+                ->withErrors($validator)
+                ->withInput();
+        }
+
         $page = request('page');
 
         if ($page == 1) {
@@ -24,69 +47,72 @@ class BookController extends Controller
                 ->route('book.index', request()->except(['page']));
         }
 
-        if (request('action') == 'search') {
-            return $this->search();
-        }
-
-        $categories = Category::orderBy('name')->get();
-
-        $books = new Book();
-
-        /*
-         * Sort
-         * */
-
         $requestSort = request('sort', 'created_at');
         $requestOrder = request('order', 'desc');
 
-        if ($requestSort == 'author') {
-            $externalQuery = Author::select('name')->whereColumn('author_id', 'authors.id');
+        $categories = Category::orderBy('name')->get();
+
+        $books = new Book;
+
+        if (request('action') == 'search') {
+            $books = $books->search(request('query'));
         }
 
-        if ($requestSort == 'category') {
-            $externalQuery = Category::select('name')->whereColumn('category_id', 'categories.id');
-        }
+        if (request('action') == 'filter') {
 
-        $books = $books->orderBy(
-            $externalQuery ?? $requestSort,
-            $requestOrder
-        );
+            /*
+             * Sort
+             * */
 
-
-        /*
-         * Filter
-         * */
-
-        $filters = array_filter(request('filter', []));
-
-        foreach ($filters as $name => $value) {
-
-            if ($name == 'title') {
-                $books = $books->where($name, 'like', '%' . $value . '%');
+            if ($requestSort == 'author') {
+                $externalQuery = Author::select('name')->whereColumn('author_id', 'authors.id');
             }
 
-            if ($name == 'description') {
-                $books = $books->where($name, 'like', '%' . $value . '%');
+            if ($requestSort == 'category') {
+                $externalQuery = Category::select('name')->whereColumn('category_id', 'categories.id');
             }
 
-            if ($name == 'author') {
-                $books = $books->whereHas('author', function (Builder $query) use (&$value) {
-                    $query->where('name', 'like', '%' . $value . '%');
-                });
-            }
+            $books = $books->orderBy(
+                $externalQuery ?? $requestSort,
+                $requestOrder
+            );
 
-            if ($name == 'category') {
-                $books = $books->where('category_id', $value);
-            }
 
-            if ($name == 'date') {
-                $books = $books->whereDate('created_at', $value);
+            /*
+             * Filter
+             * */
+
+            $filters = array_filter(request('filter', []));
+
+            foreach ($filters as $name => $value) {
+
+                if ($name == 'title') {
+                    $books = $books->where($name, 'like', '%' . $value . '%');
+                }
+
+                if ($name == 'description') {
+                    $books = $books->where($name, 'like', '%' . $value . '%');
+                }
+
+                if ($name == 'author') {
+                    $books = $books->whereHas('author', function (Builder $query) use (&$value) {
+                        $query->where('name', 'like', '%' . $value . '%');
+                    });
+                }
+
+                if ($name == 'category') {
+                    $books = $books->where('category_id', $value);
+                }
+
+                if ($name == 'date') {
+                    $books = $books->whereDate('created_at', $value);
+                }
+
             }
 
         }
 
         $books = $books->paginate(5);
-
 
         return view('book.index', compact(
             'books',
