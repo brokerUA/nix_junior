@@ -21,5 +21,3 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/', [BookController::class, 'index'])
     ->name('book.index');
 
-Route::get('/search', [BookController::class, 'search'])
-    ->name('book.search');
