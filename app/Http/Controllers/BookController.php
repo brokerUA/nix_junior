@@ -122,24 +122,6 @@ class BookController extends Controller
         ));
     }
 
-    private function search()
-    {
-        $books = Book::search(request('query'))
-            ->paginate(5);
-
-        $categories = Category::orderBy('name')->get();
-
-        $requestSort = request('sort', 'created_at');
-        $requestOrder = request('order', 'desc');
-
-        return view('book.index', compact(
-            'books',
-            'requestSort',
-            'requestOrder',
-            'categories',
-        ));
-    }
-
     /**
      * Show the form for creating a new resource.
      *
