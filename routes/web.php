@@ -24,4 +24,4 @@ Route::get('/', [BookController::class, 'index'])
 
 Route::resource('users', UserController::class)->except([
     'show', 'destroy'
-]);
+])->middleware(['role:admin']);

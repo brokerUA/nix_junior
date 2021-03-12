@@ -16,7 +16,8 @@
         "laravel/scout": "^8.6",
         "laravel/tinker": "^2.5",
         "laravel/ui": "^3.2",
-        "meilisearch/meilisearch-laravel-scout": "^0.12.4"
+        "meilisearch/meilisearch-laravel-scout": "^0.12.4",
+        "santigarcor/laratrust": "^6.3"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
