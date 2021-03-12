@@ -1,3 +1,2 @@
 
-l	php:S1192"PDefine a constant instead of duplicating this literal "nullable|string" 4 times.(ŞÏíâ8áõşá/
-l	php:S1192"KDefine a constant instead of duplicating this literal "user.index" 3 times.(ÒŒÉ³úÿÿÿÿ8†Îªâ/
+m	php:S1192"LDefine a constant instead of duplicating this literal "users.index" 3 times.(¾»…Ñùÿÿÿÿ8è•ˆŠ‚/

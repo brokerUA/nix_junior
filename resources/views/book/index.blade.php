@@ -17,13 +17,16 @@
 
                 <form method="get" action="{{ route('book.index') }}">
 
-                    <fieldset>
+                    <fieldset class="mb-4">
                         <legend>Search</legend>
                         <input type="search" name="query"
-                               value="{{ request('action') == 'search' ? request('query') : old('query') }}"
-                               placeholder="fulltext search" maxlength="100">
-                        <button type="submit" name="action" value="search">Find</button>
+                               value="{{ old('query') ?? request('query') }}"
+                               placeholder="search query" maxlength="100">
+                        <button type="submit">Find</button>
                     </fieldset>
+
+                    <input type="hidden" name="sort" value="{{ $requestSort }}">
+                    <input type="hidden" name="order" value="{{ $requestOrder }}">
 
                     <table class="table">
                         <thead>
@@ -32,11 +35,7 @@
                                 <a href="{{ update_query(['sort' => 'title', 'order' => ($requestSort == 'title' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}" style="text-decoration: none;">
                                     Title
                                     @if ($requestSort == 'title')
-                                        @if ($requestOrder == 'asc')
-                                            &darr;
-                                        @else
-                                            &uarr;
-                                        @endif
+                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
                                     @else
                                         &#x21C5;
                                     @endif
@@ -44,28 +43,20 @@
                             </th>
                             <th>Description</th>
                             <th>
-                                <a href="{{ update_query(['sort' => 'author', 'order' => ($requestSort == 'author' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}" style="text-decoration: none;">
+                                <a href="{{ update_query(['sort' => 'author_id', 'order' => ($requestSort == 'author_id' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}" style="text-decoration: none;">
                                     Author
-                                    @if ($requestSort == 'author')
-                                        @if ($requestOrder == 'asc')
-                                            &darr;
-                                        @else
-                                            &uarr;
-                                        @endif
+                                    @if ($requestSort == 'author_id')
+                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
                                     @else
                                         &#x21C5;
                                     @endif
                                 </a>
                             </th>
                             <th>
-                                <a href="{{ update_query(['sort' => 'category', 'order' => ($requestSort == 'category' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}" style="text-decoration: none;">
+                                <a href="{{ update_query(['sort' => 'category_id', 'order' => ($requestSort == 'category_id' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}" style="text-decoration: none;">
                                     Category
-                                    @if ($requestSort == 'category')
-                                        @if ($requestOrder == 'asc')
-                                            &darr;
-                                        @else
-                                            &uarr;
-                                        @endif
+                                    @if ($requestSort == 'category_id')
+                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
                                     @else
                                         &#x21C5;
                                     @endif
@@ -75,11 +66,7 @@
                                 <a href="{{ update_query(['sort' => 'created_at', 'order' => ($requestSort == 'created_at' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}" style="text-decoration: none;">
                                     Added
                                     @if ($requestSort == 'created_at')
-                                        @if ($requestOrder == 'asc')
-                                            &darr;
-                                        @else
-                                            &uarr;
-                                        @endif
+                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
                                     @else
                                         &#x21C5;
                                     @endif
@@ -90,22 +77,22 @@
                         <tr>
                             <th>
                                 <input type="text" name="filter[title]" placeholder="filter by title"
-                                       value="{{ request('action') == 'filter' ? request('filter.title') : old('filter.title') }}">
+                                       value="{{ old('filter.title') ?? request('filter.title') }}">
                             </th>
                             <th>
                                 <input type="text" name="filter[description]" placeholder="filter by description"
-                                       value="{{ request('action') == 'filter' ? request('filter.description') : old('filter.description') }}">
+                                       value="{{ old('filter.description') ?? request('filter.description') }}">
                             </th>
                             <th>
-                                <input type="text" name="filter[author]" placeholder="filter by author"
-                                       value="{{ request('action') == 'filter' ? request('filter.author') : old('filter.author') }}">
+                                <input type="text" name="filter[author_id]" placeholder="filter by author"
+                                       value="{{ old('filter.author_id') ?? request('filter.author_id') }}">
                             </th>
                             <th>
-                                <select name="filter[category]">
+                                <select name="filter[category_id]">
                                     <option value="" selected>—</option>
                                     @foreach($categories as $category)
                                         <option
-                                            {{ (request('action') == 'filter' && request('filter.category') == $category->id) ? 'selected' : old('filter.category') }}
+                                            {{ (old('filter.category_id') ?? request('filter.category_id')) == $category->id ? 'selected' : '' }}
                                             value="{{ $category->id }}">
                                             {{ $category->name }}
                                         </option>
@@ -113,11 +100,11 @@
                                 </select>
                             </th>
                             <th>
-                                <input type="date" name="filter[date]" placeholder="filter by date"
-                                       value="{{ request('action') == 'filter' ? request('filter.date') : old('filter.date') }}">
+                                <input type="date" name="filter[created_at]" placeholder="filter by date"
+                                       value="{{ old('filter.created_at') ?? request('filter.created_at') }}">
                             </th>
                             <th>
-                                <button type="submit" name="action" value="filter">apply</button>
+                                <button type="submit">apply</button>
                             </th>
                         </tr>
                         </thead>

@@ -76,3 +76,17 @@ W
 'app/Http/Controllers/HomeController.php,9\c\9c8530715f6b05b710e3fa767bada1e4d0297e47
 @
 config/scout.php,9\0\901c47365357f1d69ffc238e5b4ce8484c0f8b1d
+P
+ database/seeders/UsersSeeder.php,1\6\16b34192f47f81d581ae7146461c0145425ddd93
+V
+&app/Http/Requests/IndexUserRequest.php,9\1\91dc1c49cdfb0e24d220f8784cadc956a8127601
+U
+%resources/views/layouts/app.blade.php,4\e\4e52e2a63befd1dc69600001e78b80ebece1ac9b
+V
+&app/Http/Requests/StoreUserRequest.php,0\d\0d6e2f207d8dccd2640066cf3f182ffd50deed92
+W
+'app/Http/Requests/UpdateUserRequest.php,3\a\3a966b5ec46b48bfa03bb93d5c19e55b9f0c8325
+U
+%resources/views/user/create.blade.php,4\e\4ecf82d8026ec0c618fe363a07416bfebfdcec1b
+S
+#resources/views/user/edit.blade.php,3\f\3fdc7d4980a56f2d71111c5b139d07f2afdf6bc4
