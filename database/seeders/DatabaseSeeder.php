@@ -20,7 +20,11 @@ class DatabaseSeeder extends Seeder
             AuthorsSeeder::class,
             CategoriesSeeder::class,
             BooksSeeder::class,
-            UsersSeeder::class,
+            LaratrustSeeder::class,
         ]);
+
+        if (! config('laratrust_seeder.create_users')) {
+            $this->call(UsersSeeder::class,);
+        }
     }
 }
