@@ -17,11 +17,15 @@ use App\Http\Controllers\UserController;
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
 Route::get('/', [BookController::class, 'index'])
-    ->name('book.index');
+    ->name('books.index');
 
-Route::resource('users', UserController::class)->except([
-    'show', 'destroy'
-])->middleware(['role:admin']);
+Route::middleware(['auth', 'role:admin'])->group(function () {
+
+    Route::resource('books', BookController::class)
+        ->except('show', 'index');
+
+    Route::resource('users', UserController::class)
+        ->except(['show', 'destroy']);
+
+});
