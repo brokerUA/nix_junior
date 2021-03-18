@@ -2,48 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IndexBookRequest;
+use App\Http\Requests\StoreBookRequest;
+use App\Http\Requests\UpdateBookRequest;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Category;
-use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
+     * @param IndexBookRequest $request
      * @return mixed
      */
-    public function index()
+    public function index(IndexBookRequest $request)
     {
-        $validator = Validator::make(request()->all(), [
-            'page' => 'nullable|integer|min:1',
-            'query' => 'nullable|string|max:100',
-            'sort' => 'nullable|string',
-            'order' => ['nullable', Rule::in(['asc', 'desc'])],
-            'filter' => 'nullable|array',
-            'filter.title' => 'nullable|string',
-            'filter.description' => 'nullable|string',
-            'filter.author_id' => 'nullable|string',
-            'filter.category_id' => 'nullable|integer|min:1',
-            'filter.created_at' => 'nullable|date',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()
-                ->route('book.index')
-                ->withErrors($validator)
-                ->withInput();
-        }
 
         $page = request('page');
 
         if ($page == 1) {
             return redirect()
-                ->route('book.index', request()->except(['page']));
+                ->route('books.index', request()->except(['page']));
         }
 
         $categories = Category::orderBy('name')->get();
@@ -153,18 +136,40 @@ class BookController extends Controller
      */
     public function create()
     {
-        //
+        $categories = Category::orderBy('name')->get();
+
+        $authors = Author::orderBy('name')->get();
+
+        return view('book.create', compact('categories', 'authors'));
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param \App\Http\Requests\StoreBookRequest $request
+     * @param Book $book
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-    public function store(Request $request)
+    public function store(StoreBookRequest $request, Book $book)
     {
-        //
+        $author = Author::firstOrCreate(
+            ['name' => $request->input('author')]
+        );
+        $book->author_id = $author->id;
+
+        if ($request->hasFile('poster')) {
+            $book->poster = $request->file('poster')->store('posters');
+        }
+
+        $book->title = $request->input('title');
+        $book->description = $request->input('description');
+        $book->category_id = $request->input('category_id');
+        $book->user_id = auth()->user()->id;
+        $book->save();
+
+        return redirect()
+            ->route('books.index')
+            ->with('message', 'Book success created.');
     }
 
     /**
@@ -181,34 +186,63 @@ class BookController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Models\Book  $books
-     * @return \Illuminate\Http\Response
+     * @param  \App\Models\Book  $book
+     * @return \Illuminate\Contracts\View\View|\Illuminate\Http\Response
      */
-    public function edit(Book $books)
+    public function edit(Book $book)
     {
-        //
+        $categories = Category::orderBy('name')->get();
+
+        $authors = Author::orderBy('name')->get();
+
+        return view('book.edit', compact('book', 'categories', 'authors'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Book  $books
-     * @return \Illuminate\Http\Response
+     * @param  \App\Http\Requests\UpdateBookRequest  $request
+     * @param  \App\Models\Book  $book
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(Request $request, Book $books)
+    public function update(UpdateBookRequest $request, Book $book)
     {
-        //
+        $author = Author::firstOrCreate(
+            ['name' => $request->input('author')]
+        );
+        $book->author_id = $author->id;
+
+        if ($request->hasFile('poster')) {
+            $book->poster = $request->file('poster')->store('posters');
+        }
+
+        $book->title = $request->input('title');
+        $book->description = $request->input('description');
+        $book->category_id = $request->input('category_id');
+        $book->save();
+
+        return redirect()
+            ->route('books.index')
+            ->with('message', 'Book updated.');
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Book  $books
-     * @return \Illuminate\Http\Response
+     * @param Book $book
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Exception
      */
-    public function destroy(Book $books)
+    public function destroy(Book $book)
     {
-        //
+        if ($book->poster) {
+            Storage::delete($book->poster);
+        }
+
+        $book->delete();
+
+        return redirect()
+            ->route('books.index')
+            ->with('message', 'Book deleted.');
     }
 }
