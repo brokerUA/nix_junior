@@ -39,58 +39,26 @@
                         </div>
                     </div>
 
-                    <input type="hidden" name="sort" value="{{ $requestSort }}">
-                    <input type="hidden" name="order" value="{{ $requestOrder }}">
+                    <input type="hidden" name="sort" value="{{ request('sort', 'created_at') }}">
+                    <input type="hidden" name="order" value="{{ request('order', 'desc') }}">
 
                     <table class="table">
                         <thead>
                         <tr>
                             <th>
-                                <a class="text-nowrap"
-                                   href="{{ update_query(['sort' => 'title', 'order' => ($requestSort == 'title' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}">
-                                    <span class="text-nowrap">
-                                    Title
-                                    @if ($requestSort == 'title')
-                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
-                                    @else
-                                        &#x21C5;
-                                    @endif
-                                    </span>
-                                </a>
-                            </th>
-                            <th>Description</th>
-                            <th>
-                                <a class="text-nowrap"
-                                   href="{{ update_query(['sort' => 'author_id', 'order' => ($requestSort == 'author_id' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}">
-                                    Author
-                                    @if ($requestSort == 'author_id')
-                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
-                                    @else
-                                        &#x21C5;
-                                    @endif
-                                </a>
+                                <x-table.sortable-field title="Title" field="title"/>
                             </th>
                             <th>
-                                <a class="text-nowrap"
-                                   href="{{ update_query(['sort' => 'category_id', 'order' => ($requestSort == 'category_id' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}">
-                                    Category
-                                    @if ($requestSort == 'category_id')
-                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
-                                    @else
-                                        &#x21C5;
-                                    @endif
-                                </a>
+                                Description
                             </th>
                             <th>
-                                <a class="text-nowrap"
-                                   href="{{ update_query(['sort' => 'created_at', 'order' => ($requestSort == 'created_at' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}">
-                                    Added
-                                    @if ($requestSort == 'created_at')
-                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
-                                    @else
-                                        &#x21C5;
-                                    @endif
-                                </a>
+                                <x-table.sortable-field title="Author" field="author_id"/>
+                            </th>
+                            <th>
+                                <x-table.sortable-field title="Category" field="category_id"/>
+                            </th>
+                            <th>
+                                <x-table.sortable-field title="Added" field="created_at"/>
                             </th>
                             <th></th>
                         </tr>

@@ -21,64 +21,54 @@
                     </div>
                 @endif
 
-                <div class="mb-4">
-                    <a href="{{ route('users.create') }}" class="btn btn-outline-secondary">Create user</a>
-                </div>
-
                 <form method="get" action="{{ route('users.index') }}">
 
-                    <fieldset>
-                        <legend>Search</legend>
-                        <input type="search" name="query"
-                               value="{{ request('query') ?? old('query') }}"
-                               placeholder="fulltext search" maxlength="100">
-                        <button type="submit">Find</button>
-                    </fieldset>
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <div class="input-group">
+                                <input type="search" name="query" class="form-control"
+                                       value="{{ old('query') ?? request('query') }}"
+                                       placeholder="search" maxlength="100">
+                                <button class="btn btn-outline-secondary" type="submit">Find</button>
+                            </div>
+                        </div>
+                        <div class="col-6 text-right">
+                            <a href="{{ route('users.create') }}" class="btn btn-outline-secondary">Create user</a>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="sort" value="{{ request('sort', 'id') }}">
+                    <input type="hidden" name="order" value="{{ request('order', 'desc') }}">
 
                     <table class="table">
                         <thead>
                         <tr>
                             <th>
-                                <a href="{{ update_query(['sort' => 'id', 'order' => ($requestSort == 'id' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}">
-                                    ID
-                                    @if ($requestSort == 'id')
-                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
-                                    @else &#x21C5; @endif
-                                </a>
+                                <x-table.sortable-field title="ID" field="id"/>
                             </th>
                             <th>
-                                <a href="{{ update_query(['sort' => 'name', 'order' => ($requestSort == 'name' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}">
-                                    Name
-                                    @if ($requestSort == 'name')
-                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
-                                    @else &#x21C5; @endif
-                                </a>
+                                <x-table.sortable-field title="Name" field="name"/>
                             </th>
                             <th>
-                                <a href="{{ update_query(['sort' => 'email', 'order' => ($requestSort == 'email' && $requestOrder == 'desc') ? 'asc' : 'desc'], ['page']) }}">
-                                    Email
-                                    @if ($requestSort == 'email')
-                                        @if ($requestOrder == 'asc') &darr; @else &uarr; @endif
-                                    @else &#x21C5; @endif
-                                </a>
+                                <x-table.sortable-field title="Email" field="email"/>
                             </th>
                             <th></th>
                         </tr>
                         <tr>
                             <th>
                                 <input type="number" name="filter[id]" placeholder="filter by id"
-                                       value="{{ request('filter.id') ?? old('filter.id') }}">
+                                       value="{{ old('filter.id') ?? request('filter.id') }}">
                             </th>
                             <th>
                                 <input type="text" name="filter[name]" placeholder="filter by name"
-                                       value="{{ request('filter.name') ?? old('filter.name') }}">
+                                       value="{{ old('filter.name') ?? request('filter.name') }}">
                             </th>
                             <th>
                                 <input type="text" name="filter[email]" placeholder="filter by email"
-                                       value="{{ request('filter.email') ?? old('filter.email') }}">
+                                       value="{{ old('filter.email') ?? request('filter.email') }}">
                             </th>
                             <th>
-                                <button type="submit">apply</button>
+                                <button class="btn btn-secondary" type="submit">Filter</button>
                             </th>
                         </tr>
                         </thead>
