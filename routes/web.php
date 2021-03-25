@@ -15,7 +15,7 @@ use App\Http\Controllers\UserController;
 |
 */
 
-Auth::routes();
+Auth::routes(['verify' => true]);
 
 Route::get('/', [BookController::class, 'index'])
     ->name('books.index');
