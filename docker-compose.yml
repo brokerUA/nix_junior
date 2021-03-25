@@ -68,17 +68,6 @@ services:
       - php
       - phpmyadmin
 
-#  meilisearch:
-#    image: getmeili/meilisearch:latest
-#    container_name: nix-meilisearch
-#    restart: always
-#    ports:
-#      - 7700:7700
-#    volumes:
-#      - meilidata:/data.ms
-#    networks:
-#      - nix
-
   mailhog:
     image: mailhog/mailhog:latest
     container_name: nix-mailhog
@@ -97,5 +86,3 @@ volumes:
     driver: local
   phpmyadmindata:
     driver: local
-#  meilidata:
-#    driver: local

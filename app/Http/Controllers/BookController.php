@@ -5,14 +5,24 @@ namespace App\Http\Controllers;
 use App\Http\Requests\IndexBookRequest;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
+use App\Http\Services\BookService;
 use App\Models\Author;
 use App\Models\Book;
 use App\Models\Category;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\RedirectResponse;
 
 class BookController extends Controller
 {
+    /**
+     * @var BookService
+     */
+    private $service;
+
+    public function __construct(BookService $service)
+    {
+        $this->service = $service;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -21,110 +31,19 @@ class BookController extends Controller
      */
     public function index(IndexBookRequest $request)
     {
-
-        $page = request('page');
+        $page = $request->input('page');
 
         if ($page == 1) {
             return redirect()
-                ->route('books.index', request()->except(['page']));
+                ->route('books.index', $request->except(['page']));
         }
 
-        $categories = Category::orderBy('name')->get();
+        $books = $this->service->getFilteredWithPaginate($request, 5);
 
-        $model = new Book;
-
-        /*
-         * Search
-         * */
-
-        if (request()->filled('query')) {
-
-            $model = $model->where(function ($query) use (&$model) {
-                foreach ($model->searchableFields as $key => $fieldName) {
-                    $methodName = $key ? 'orWhere' : 'where';
-
-                    if (in_array($fieldName, ['title', 'description', 'category_id'])) {
-                        $query = $query->$methodName($fieldName, 'like', '%' . request('query') . '%');
-                    }
-
-                    if ($fieldName == 'author_id') {
-                        $query = $query->$methodName(function ($query) {
-                            return $query->whereHas('author', function (Builder $query) {
-                                $query->where('name', 'like', '%' . request('query') . '%');
-                            });
-                        });
-                    }
-
-                    if ($fieldName == 'created_at') {
-                        $query = $query->$methodName(function ($query) {
-                            return $query->whereDate('created_at', request('query'));
-                        });
-                    }
-
-                }
-                return $query;
-            });
-
-        }
-
-        /*
-        * Sort
-        * */
-
-        $requestSort = request('sort', 'created_at');
-        $requestOrder = request('order', 'desc');
-
-        if ($requestSort == 'author_id') {
-            $externalQuery = Author::select('name')->whereColumn('author_id', 'authors.id');
-        }
-
-        if ($requestSort == 'category_id') {
-            $externalQuery = Category::select('name')->whereColumn('category_id', 'categories.id');
-        }
-
-        $model = $model->orderBy(
-            $externalQuery ?? $requestSort,
-            $requestOrder
-        );
-
-        /*
-         * Filter
-         * */
-
-        $filters = array_filter(request('filter', []));
-
-        foreach ($filters as $name => $value) {
-
-            if ($name == 'title') {
-                $model = $model->where($name, 'like', '%' . $value . '%');
-            }
-
-            if ($name == 'description') {
-                $model = $model->where($name, 'like', '%' . $value . '%');
-            }
-
-            if ($name == 'author_id') {
-                $model = $model->whereHas('author', function (Builder $query) use (&$value) {
-                    $query->where('name', 'like', '%' . $value . '%');
-                });
-            }
-
-            if ($name == 'category_id') {
-                $model = $model->where('category_id', $value);
-            }
-
-            if ($name == 'created_at') {
-                $model = $model->whereDate('created_at', $value);
-            }
-
-        }
-
-        $books = $model->paginate(5);
+        $categories = Category::select(['id', 'name'])->orderBy('name')->get();
 
         return view('book.index', compact(
             'books',
-            'requestSort',
-            'requestOrder',
             'categories',
         ));
     }
@@ -147,40 +66,15 @@ class BookController extends Controller
      * Store a newly created resource in storage.
      *
      * @param \App\Http\Requests\StoreBookRequest $request
-     * @param Book $book
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function store(StoreBookRequest $request, Book $book)
+    public function store(StoreBookRequest $request): RedirectResponse
     {
-        $author = Author::firstOrCreate(
-            ['name' => $request->input('author')]
-        );
-        $book->author_id = $author->id;
-
-        if ($request->hasFile('poster')) {
-            $book->poster = $request->file('poster')->store('posters');
-        }
-
-        $book->title = $request->input('title');
-        $book->description = $request->input('description');
-        $book->category_id = $request->input('category_id');
-        $book->user_id = auth()->user()->id;
-        $book->save();
+        $this->service->save($request);
 
         return redirect()
             ->route('books.index')
             ->with('message', 'Book success created.');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Book  $books
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Book $books)
-    {
-        //
     }
 
     /**
@@ -201,25 +95,13 @@ class BookController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \App\Http\Requests\UpdateBookRequest  $request
-     * @param  \App\Models\Book  $book
+     * @param \App\Http\Requests\UpdateBookRequest $request
+     * @param int $id
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(UpdateBookRequest $request, Book $book)
+    public function update(UpdateBookRequest $request, int $id): RedirectResponse
     {
-        $author = Author::firstOrCreate(
-            ['name' => $request->input('author')]
-        );
-        $book->author_id = $author->id;
-
-        if ($request->hasFile('poster')) {
-            $book->poster = $request->file('poster')->store('posters');
-        }
-
-        $book->title = $request->input('title');
-        $book->description = $request->input('description');
-        $book->category_id = $request->input('category_id');
-        $book->save();
+        $this->service->update($request, $id);
 
         return redirect()
             ->route('books.index')
@@ -229,17 +111,12 @@ class BookController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Book $book
+     * @param int $id
      * @return \Illuminate\Http\RedirectResponse
-     * @throws \Exception
      */
-    public function destroy(Book $book)
+    public function destroy(int $id): RedirectResponse
     {
-        if ($book->poster) {
-            Storage::delete($book->poster);
-        }
-
-        $book->delete();
+        $this->service->delete($id);
 
         return redirect()
             ->route('books.index')
