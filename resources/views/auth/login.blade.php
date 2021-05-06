@@ -65,6 +65,31 @@
                             </div>
                         </div>
                     </form>
+
+                    <hr>
+
+                    <div class="form-group row">
+                        <div class="col-md-4 text-md-right">
+                            <span style="line-height: 2rem">
+                                {{ __('Login with') }}
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+
+                            <a class="" href="{{ url('/auth/google') }}">
+                                @svg('default.google', 'mr-1', ['width' => '2rem', 'height' => 'auto']){{--
+                                --}}Google</a>
+
+                            <span style="line-height: 2rem">
+                                &nbsp;&nbsp;or&nbsp;&nbsp;
+                            </span>
+
+                            <a class="" href="{{ url('/auth/facebook') }}">
+                                @svg('default.facebook', 'mr-1', ['width' => '2rem', 'height' => 'auto']){{--
+                                --}}Facebook</a>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>

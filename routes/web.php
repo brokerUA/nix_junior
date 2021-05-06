@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Auth\LoginController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\UserController;
+use Laravel\Socialite\Facades\Socialite;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +19,12 @@ use App\Http\Controllers\UserController;
 */
 
 Auth::routes(['verify' => true]);
+
+Route::get('/auth/{provider}', [LoginController::class, 'redirectToProvider'])
+    ->name('auth-provider');
+
+Route::get('/auth/{provider}/callback', [LoginController::class, 'handleProviderCallback']);
+
 
 Route::get('/', [BookController::class, 'index'])
     ->name('books.index');
