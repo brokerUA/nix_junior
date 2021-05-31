@@ -4,8 +4,9 @@ services:
   php:
     build:
       args:
-        user: broker
-        uid: 1000
+        user: ${_USER:-broker}
+        uid: ${_UID:-1000}
+        gid: ${_GID:-1000}
       context: ./.docker/php/
       dockerfile: Dockerfile
     image: php-7.4-fpm

@@ -5,17 +5,84 @@ namespace App\Http\Services;
 use App\Http\Requests\IndexUserRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Traits\ServiceTrait;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * Class UserService
+ * @package App\Http\Services
+ */
 class UserService
 {
+    use ServiceTrait;
+
     /**
      * @var User
      */
     private $model;
 
+    /**
+     * @param Builder $query
+     * @param string $sort
+     * @param string $order
+     * @return Builder
+     */
+    protected function scopeSort(Builder $query, string $sort, string $order): Builder
+    {
+        return $query->orderBy($sort, $order);
+    }
+
+    /**
+     * @param Builder $query
+     * @param string|null $searchQuery
+     * @param array $filters
+     * @return Builder
+     */
+    protected function scopeSearch(Builder $query, ?string $searchQuery, array $filters): Builder
+    {
+        if (is_null($searchQuery)) {
+            return $query;
+        }
+
+        return $query->where(function ($query) use (&$filters, &$searchQuery) {
+
+            $fields = array_diff(
+                $this->model->searchableFields,
+                array_keys( array_filter($filters) )
+            );
+
+            foreach ($fields as $key => $fieldName) {
+                $methodName = $key ? 'orWhere' : 'where';
+                $query = $query->$methodName($fieldName, 'like', '%' . $searchQuery . '%');
+            }
+
+            return $query;
+        });
+    }
+
+    /**
+     * @param Builder $query
+     * @param array $filters
+     * @return Builder
+     */
+    protected function scopeFilter(Builder $query, array $filters): Builder
+    {
+        $filters = array_filter($filters);
+
+        foreach ($filters as $name => $value) {
+            $query = $query->where($name, 'like', '%' . $value . '%');
+        }
+
+        return $query;
+    }
+
+    /**
+     * UserService constructor.
+     * @param User $model
+     */
     public function __construct(User $model)
     {
         $this->model = $model;
@@ -28,21 +95,7 @@ class UserService
      */
     public function getFilteredWithPaginate(IndexUserRequest $request, int $paginateCount): LengthAwarePaginator
     {
-        return $this->model
-            ->sort(
-                $request->input('sort', 'created_at'),
-                $request->input('order', 'desc')
-            )
-            ->search(
-                $request->input('query'),
-                $request->input('filter', [])
-            )
-            ->filter(
-                $request->input('filter', [])
-            )
-            ->paginate(
-                $paginateCount
-            );
+        return $this->buildFilteredWithPaginate($request, $paginateCount);
     }
 
     /**

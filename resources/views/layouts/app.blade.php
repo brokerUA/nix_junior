@@ -35,7 +35,7 @@
                     <ul class="navbar-nav mr-auto">
                         @role('admin')
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('users.index') }}">users</a>
+                            <a class="nav-link" href="{{ route('users.index') }}">Users</a>
                         </li>
                         @endrole
                     </ul>
