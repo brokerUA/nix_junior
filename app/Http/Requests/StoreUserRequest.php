@@ -29,7 +29,7 @@ class StoreUserRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'password' => 'required|string|min:8|max:255',
-            'password_repeat' => 'required|same:password',
+            'password_confirmation' => 'required|same:password',
         ];
     }
 }

@@ -32,7 +32,7 @@ class RegisterController extends Controller
     /**
      * @var UserService
      */
-    public $userService;
+    private $userService;
 
     /**
      * Where to redirect users after registration.
@@ -60,8 +60,9 @@ class RegisterController extends Controller
      */
     public function register(StoreUserRequest $request)
     {
+        $user = $this->userService->save($request);
 
-        event(new Registered($user = $this->userService($request)));
+        event(new Registered($user));
 
         $this->guard()->login($user);
 
