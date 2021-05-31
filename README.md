@@ -6,13 +6,19 @@
 
 `cp .env.example .env`
 
-`docker-compose up -d`
+`_UID=1000 && _GID=1000 && _USER=broker`
 
-`docker-compose exec php composer install`
+`/usr/sbin/adduser -u ${_UID} -D -H ${_USER} && chown -R ${_UID}:${_GID} ./`
 
-`docker-compose exec php php artisan key:generate`
+`_UID=${_UID} _GID=${_GID} _USER=${_USER} docker-compose up -d`
 
-`docker-compose exec php php artisan migrate:fresh --seed`
+`docker-compose exec php bash`
+
+`composer install`
+
+`php artisan key:generate`
+
+`php artisan migrate:fresh --seed`
 
 ### Admin user:
 

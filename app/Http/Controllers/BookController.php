@@ -6,9 +6,9 @@ use App\Http\Requests\IndexBookRequest;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Http\Services\BookService;
-use App\Models\Author;
+use App\Http\Services\CategoryService;
+use App\Http\Services\AuthorService;
 use App\Models\Book;
-use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 
 class BookController extends Controller
@@ -16,11 +16,26 @@ class BookController extends Controller
     /**
      * @var BookService
      */
-    private $service;
+    private $bookService;
 
-    public function __construct(BookService $service)
-    {
-        $this->service = $service;
+    /**
+     * @var CategoryService
+     */
+    private $categoryService;
+
+    /**
+     * @var AuthorService
+     */
+    private $authorService;
+
+    public function __construct(
+        BookService $bookService,
+        CategoryService $categoryService,
+        AuthorService $authorService
+    ) {
+        $this->bookService = $bookService;
+        $this->categoryService = $categoryService;
+        $this->authorService = $authorService;
     }
 
     /**
@@ -38,9 +53,9 @@ class BookController extends Controller
                 ->route('books.index', $request->except(['page']));
         }
 
-        $books = $this->service->getFilteredWithPaginate($request, 5);
+        $books = $this->bookService->getFilteredWithPaginate($request, 5);
 
-        $categories = Category::select(['id', 'name'])->orderBy('name')->get();
+        $categories = $this->categoryService->getAll();
 
         return view('book.index', compact(
             'books',
@@ -55,9 +70,9 @@ class BookController extends Controller
      */
     public function create()
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = $this->categoryService->getAll();
 
-        $authors = Author::orderBy('name')->get();
+        $authors = $this->authorService->getAll();
 
         return view('book.create', compact('categories', 'authors'));
     }
@@ -70,7 +85,7 @@ class BookController extends Controller
      */
     public function store(StoreBookRequest $request): RedirectResponse
     {
-        $this->service->save($request);
+        $this->bookService->save($request);
 
         return redirect()
             ->route('books.index')
@@ -85,9 +100,9 @@ class BookController extends Controller
      */
     public function edit(Book $book)
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = $this->categoryService->getAll();
 
-        $authors = Author::orderBy('name')->get();
+        $authors = $this->authorService->getAll();
 
         return view('book.edit', compact('book', 'categories', 'authors'));
     }
@@ -101,7 +116,7 @@ class BookController extends Controller
      */
     public function update(UpdateBookRequest $request, int $id): RedirectResponse
     {
-        $this->service->update($request, $id);
+        $this->bookService->update($request, $id);
 
         return redirect()
             ->route('books.index')
@@ -116,7 +131,7 @@ class BookController extends Controller
      */
     public function destroy(int $id): RedirectResponse
     {
-        $this->service->delete($id);
+        $this->bookService->delete($id);
 
         return redirect()
             ->route('books.index')
